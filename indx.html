@@ -1,0 +1,692 @@
+﻿<!doctype html>
+<html lang="ar">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>carzon.DZ SALMI</title>
+	<link rel="stylesheet" href="styles.css">
+	<script src="wilayas-data.js"></script>
+</head>
+<body dir="rtl">
+	<header class="topbar">
+		<div class="brand">carzon.DZ SALMI</div>
+		<div class="controls">
+			<label class="control-item">
+				<select id="langSelect" aria-label="اختر اللغة">
+					<option value="ar">العربية</option>
+					<option value="fr">Français</option>
+					<option value="en">English</option>
+				</select>
+			</label>
+
+			<label class="control-item">
+				<select id="roleSelect" aria-label="تبديل الواجهة">
+					<option value="user">مستخدم</option>
+					<option value="admin">مسؤول</option>
+				</select>
+			</label>
+		</div>
+	</header>
+
+	<nav class="main-nav" id="mainNav">
+		<!-- nav items will be filled by JS based on role -->
+	</nav>
+
+	<main class="container">
+		<section id="content">
+			<h1 data-i18n="welcome">مرحبا بك في المتجر</h1>
+			<p data-i18n="intro">تصفح منتجاتنا أو سجل دخول المسؤول لإدارة المتجر.</p>
+		</section>
+	</main>
+
+	<script>
+		const PASSWORD = 'admin123';
+		const langSelect = document.getElementById('langSelect');
+		const roleSelect = document.getElementById('roleSelect');
+		const mainNav = document.getElementById('mainNav');
+		const content = document.getElementById('content');
+
+		const translations = {
+			ar: {
+				welcome: 'مرحبا بك في المتجر',
+				intro: 'تصفح منتجاتنا أو سجل دخول المسؤول لإدارة المتجر.',
+				products: 'المنتجات',
+				about: 'حول المتجر',
+				orders: 'الطلبات',
+				addProduct: 'إضافة المنتجات',
+				manageStore: 'إدارة المتجر',
+				users: 'المستخدمين',
+				productPage: 'قائمة المنتجات',
+				noProducts: 'لا يوجد منتجات حتى الآن. أضف أول منتج من لوحة المسؤول.',
+				productName: 'اسم المنتج',
+				productDesc: 'وصف المنتج',
+				productImage: 'اضافة الصور',
+				deliveryHome: 'التوصيل للمنزل',
+				deliveryOffice: 'التوصيل للمكتب',
+				productPrice: 'سعر المنتج',
+				orderNow: 'اطلب الآن',
+				orderPhone: 'رقم الهاتف',
+				orderFirstName: 'الإسم',
+				orderLastName: 'اللقب',
+				orderState: 'الولاية',
+				orderMunicipality: 'البلدية',
+				orderAddress: 'العنوان',
+				orderStatus: 'الحالة',
+				orderPending: 'قيد التنفيذ',
+				orderConfirmed: 'تم التأكيد',
+				confirmOrder: 'تأكيد الطلب',
+				deleteOrder: 'حذف الطلب',
+				orderDate: 'تاريخ الطلب',
+				orderSuccess: 'تم إرسال طلبك بنجاح.',
+				noOrders: 'لا توجد طلبات حتى الآن.',
+				saveProduct: 'حفظ المنتج',
+				updateProduct: 'تحديث المنتج',
+				cancelEdit: 'إلغاء',
+				editLabel: 'تعديل',
+				deleteLabel: 'حذف',
+				addedSuccess: 'تمت إضافة المنتج بنجاح.',
+				updatedSuccess: 'تم تحديث المنتج بنجاح.',
+				deletedSuccess: 'تم حذف المنتج بنجاح.',
+				manageTitle: 'لوحة تحكم المسؤول',
+				aboutText: 'carzon.DZ SALMI هو متجر إلكتروني عصري يقدم تجربة تسوق سهلة وآمنة.',
+				ordersText: 'صفحة الطلبات للمسؤول. هنا يمكنك متابعة طلبات العملاء.',
+				usersText: 'صفحة إدارة المستخدمين للمسؤول. يمكنك مشاهدة العملاء وتعديل صلاحياتهم.'
+			},
+			fr: {
+				welcome: 'Bienvenue dans la boutique',
+				intro: "Parcourez nos produits ou connectez-vous en tant qu'administrateur.",
+				products: 'Produits',
+				about: 'À propos',
+				orders: 'Commandes',
+				addProduct: 'Ajouter des produits',
+				manageStore: 'Gérer la boutique',
+				users: 'Utilisateurs',
+				productPage: 'Liste de produits',
+				noProducts: 'Aucun produit pour le moment. Ajoutez-en depuis le panneau admin.',
+				productName: 'Nom du produit',
+				productDesc: 'Description du produit',
+				productImage: 'Ajouter des images',
+				deliveryHome: 'Livraison à domicile',
+				deliveryOffice: 'Livraison au bureau',
+				productPrice: 'Prix du produit',
+				orderNow: 'Commander maintenant',
+				orderPhone: 'Téléphone',
+				orderFirstName: 'Prénom',
+				orderLastName: 'Nom',
+				orderState: 'Wilaya',
+				orderMunicipality: 'Commune',
+				orderAddress: 'Adresse',
+				orderStatus: 'Statut',
+				orderPending: 'En attente',
+				orderConfirmed: 'Confirmée',
+				confirmOrder: 'Confirmer la commande',
+				deleteOrder: 'Supprimer la commande',
+				orderDate: 'Date de commande',
+				orderSuccess: 'Votre commande a été envoyée avec succès.',
+				noOrders: 'Aucune commande pour le moment.',
+				saveProduct: 'Enregistrer le produit',
+				updateProduct: 'Mettre à jour le produit',
+				cancelEdit: 'Annuler',
+				editLabel: 'Modifier',
+				deleteLabel: 'Supprimer',
+				addedSuccess: 'Produit ajouté avec succès.',
+				updatedSuccess: 'Produit mis à jour avec succès.',
+				deletedSuccess: 'Produit supprimé avec succès.',
+				manageTitle: 'Panneau d’administration',
+				aboutText: 'carzon.DZ SALMI est une boutique en ligne moderne offrant une expérience d’achat fluide et sécurisée.',
+				ordersText: 'Page des commandes pour l’administrateur. Suivez les commandes des clients ici.',
+				usersText: 'Page de gestion des utilisateurs pour l’administrateur. Affichez les clients et gérez leurs accès.'
+			},
+			en: {
+				welcome: 'Welcome to the store',
+				intro: 'Browse our products or sign in as admin to manage the store.',
+				products: 'Products',
+				about: 'About',
+				orders: 'Orders',
+				addProduct: 'Add Products',
+				manageStore: 'Manage Store',
+				users: 'Users',
+				productPage: 'Product List',
+				noProducts: 'No products yet. Add the first product from the admin panel.',
+				productName: 'Product Name',
+				productDesc: 'Product Description',
+				productImage: 'Add Images',
+				deliveryHome: 'Home delivery',
+				deliveryOffice: 'Office delivery',
+				productPrice: 'Product Price',
+				orderNow: 'Order Now',
+				orderPhone: 'Phone Number',
+				orderFirstName: 'First Name',
+				orderLastName: 'Last Name',
+				orderState: 'State',
+				orderMunicipality: 'Municipality',
+				orderAddress: 'Address',
+				orderStatus: 'Status',
+				orderPending: 'Pending',
+				orderConfirmed: 'Confirmed',
+				confirmOrder: 'Confirm Order',
+				deleteOrder: 'Delete Order',
+				orderDate: 'Order Date',
+				orderSuccess: 'Your order has been sent successfully.',
+				noOrders: 'No orders yet.',
+				saveProduct: 'Save Product',
+				updateProduct: 'Update Product',
+				cancelEdit: 'Cancel',
+				editLabel: 'Edit',
+				deleteLabel: 'Delete',
+				addedSuccess: 'Product added successfully.',
+				updatedSuccess: 'Product updated successfully.',
+				deletedSuccess: 'Product deleted successfully.',
+				manageTitle: 'Admin Dashboard',
+				aboutText: 'carzon.DZ SALMI is a modern online store offering a smooth and secure shopping experience.',
+				ordersText: 'Admin orders page. Track customer orders here.',
+				usersText: 'Admin users page. View customers and manage access rights.'
+			}
+		};
+
+		const defaultProducts = [
+			{
+				id: 1,
+				images: ['https://images.unsplash.com/photo-1518449070856-9be85812367e?auto=format&fit=crop&w=600&q=80'],
+				name: { ar: 'سماعة لاسلكية', fr: 'Casque sans fil', en: 'Wireless Headset' },
+				description: {
+					ar: 'جودة صوت عالية مع بطارية طويلة العمر.',
+					fr: 'Son de haute qualité avec une batterie longue durée.',
+					en: 'High quality sound with long-lasting battery.'
+				},
+				price: 4999.00
+			}
+		];
+
+		function readFileAsDataURL(file) {
+			return new Promise((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = () => resolve(reader.result.toString());
+				reader.onerror = () => reject(reader.error);
+				reader.readAsDataURL(file);
+			});
+		}
+
+		function getProductImage(product, idx = 0) {
+			if (product.images && product.images.length) return product.images[idx % product.images.length];
+			if (product.image) return product.image;
+			return '';
+		}
+
+
+		function populateStateSelect(selectEl, locale) {
+			selectEl.innerHTML = `<option value="">${translations[locale].orderState}</option>` + wilayas.map(w => `<option value="${w.code}">${w.name[locale] || w.name.en}</option>`).join('');
+		}
+
+		function populateMunicipalitySelect(munEl, stateCode, locale) {
+			const w = wilayas.find(x => x.code === stateCode);
+			if (!w || !w.municipalities || w.municipalities.length === 0) {
+				munEl.innerHTML = `<option value="">${translations[locale].orderMunicipality}</option>`;
+				return;
+			}
+			munEl.innerHTML = w.municipalities.map(m => `<option value="${m[locale] || m.en}">${m[locale] || m.en}</option>`).join('');
+		}
+
+		function loadProducts() {
+			return JSON.parse(localStorage.getItem('storeProducts')) || defaultProducts;
+		}
+
+		function saveProducts(products) {
+			localStorage.setItem('storeProducts', JSON.stringify(products));
+		}
+
+		function loadOrders() {
+			return JSON.parse(localStorage.getItem('storeOrders')) || [];
+		}
+
+		function saveOrders(orders) {
+			localStorage.setItem('storeOrders', JSON.stringify(orders));
+		}
+
+		let products = loadProducts();
+		let orders = loadOrders();
+
+		function setDirection(lang) {
+			if (lang === 'ar') document.documentElement.dir = 'rtl';
+			else document.documentElement.dir = 'ltr';
+		}
+
+		function translate(lang) {
+			setDirection(lang);
+			document.querySelectorAll('[data-i18n]').forEach(el => {
+				const key = el.getAttribute('data-i18n');
+				if (translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+			});
+			renderNav(roleSelect.value);
+		}
+
+		function createNavItem(key) {
+			const lang = langSelect.value;
+			const li = document.createElement('li');
+			li.textContent = translations[lang][key];
+			li.dataset.action = key;
+			return li;
+		}
+
+		function renderNav(role) {
+			const lang = langSelect.value;
+			mainNav.innerHTML = '';
+			const ul = document.createElement('ul');
+			ul.className = 'nav-list';
+			let items = ['products','about'];
+
+			if (role === 'admin' && sessionStorage.getItem('isAdmin') === 'true') {
+				items = ['orders','addProduct','manageStore','users'];
+			}
+
+			items.forEach(key => ul.appendChild(createNavItem(key)));
+			ul.addEventListener('click', event => {
+				const action = event.target.dataset.action;
+				if (action) handleNavAction(action);
+			});
+			mainNav.appendChild(ul);
+		}
+
+		function handleNavAction(action) {
+			content.dataset.currentAction = action;
+			switch (action) {
+				case 'products':
+					showProductsPage();
+					break;
+				case 'about':
+					showAboutPage();
+					break;
+				case 'orders':
+					showOrdersPage();
+					break;
+				case 'addProduct':
+					showAddProductPage();
+					break;
+				case 'manageStore':
+					showManageStorePage();
+					break;
+				case 'users':
+					showUsersPage();
+					break;
+			}
+		}
+
+		function formatPrice(value, lang) {
+			lang = lang || langSelect.value;
+			const locale = lang === 'ar' ? 'ar-DZ' : lang === 'fr' ? 'fr-FR' : 'en-US';
+			return new Intl.NumberFormat(locale, { style: 'currency', currency: 'DZD', maximumFractionDigits: 2 }).format(value);
+		}
+
+		function showProductsPage() {
+			content.dataset.currentAction = 'products';
+			const lang = langSelect.value;
+			const sorted = products.slice().sort((a,b)=>b.id - a.id);
+			content.innerHTML = `
+				<h1>${translations[lang].productPage}</h1>
+				<div class="product-grid">
+					${sorted.length === 0 ? `<p class="empty-state">${translations[lang].noProducts}</p>` : sorted.map(p => `
+						<div class="product-card" data-id="${p.id}">
+							<div class="carousel">
+								<button class="carousel-btn carousel-prev" data-id="${p.id}">&lt;</button>
+								<img src="${getProductImage(p,0)}" alt="${p.name[lang] || p.name.en}" class="carousel-image" data-index="0">
+								<button class="carousel-btn carousel-next" data-id="${p.id}">&gt;</button>
+							</div>
+							<h3>${p.name[lang] || p.name.en}</h3>
+							<p>${p.description[lang] || p.description.en}</p>
+							<p class="price">${formatPrice(p.price || 0)}</p>
+							<div class="card-actions">
+								<button class="btn" data-id="${p.id}" data-action="order">${translations[lang].orderNow}</button>
+							</div>
+						</div>
+					`).join('')}
+				</div>
+			`;
+
+			document.querySelectorAll('.carousel-prev, .carousel-next').forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					e.preventDefault();
+					const id = Number(btn.dataset.id);
+					const dir = btn.classList.contains('carousel-next') ? 1 : -1;
+					const card = document.querySelector(`.product-card[data-id="${id}"]`);
+					const img = card.querySelector('.carousel-image');
+					const prod = products.find(x => x.id === id);
+					if (!prod) return;
+					const count = (prod.images && prod.images.length) || (prod.image ? 1 : 0);
+					if (count === 0) return;
+					let idx = Number(img.dataset.index) + dir;
+					if (idx < 0) idx = count - 1;
+					if (idx >= count) idx = 0;
+					img.dataset.index = idx;
+					img.src = getProductImage(prod, idx);
+				});
+			});
+
+				content.querySelectorAll('button[data-action="order"]').forEach(button => {
+					button.addEventListener('click', () => showOrderProductPage(Number(button.dataset.id)));
+				});
+		}
+
+		function showOrderProductPage(productId) {
+			const lang = langSelect.value;
+			const product = products.find(item => item.id === productId);
+			if (!product) return showProductsPage();
+			content.dataset.currentAction = 'order';
+			content.innerHTML = `
+				<h1>${translations[lang].orderNow}</h1>
+				<div class="product-card order-detail-card">
+					<img src="${getProductImage(product,0)}" alt="${product.name[lang] || product.name.en}" loading="lazy">
+					<div class="product-card-body">
+						<h2>${product.name[lang] || product.name.en}</h2>
+						<p>${product.description[lang] || product.description.en}</p>
+						<p class="product-price">${formatPrice(product.price, lang)}</p>
+					</div>
+				</div>
+				<form id="orderForm" class="order-form">
+					<label>${translations[lang].orderFirstName}</label>
+					<input id="orderFirstName" type="text" placeholder="${translations[lang].orderFirstName}" required>
+					<label>${translations[lang].orderLastName}</label>
+					<input id="orderLastName" type="text" placeholder="${translations[lang].orderLastName}" required>
+					<label>${translations[lang].orderPhone}</label>
+					<input id="orderPhone" type="tel" placeholder="${translations[lang].orderPhone}" required>
+					<label>${translations[lang].orderState}</label>
+					<select id="orderState" required></select>
+					<label>${translations[lang].orderMunicipality}</label>
+					<select id="orderMunicipality" required><option value="">${translations[lang].orderMunicipality}</option></select>
+				<label>${translations[lang].orderAddress}</label>
+				<input id="orderAddress" type="text" placeholder="${translations[lang].orderAddress}" required>
+					<label>${translations[lang].deliveryHome} / ${translations[lang].deliveryOffice}</label>
+					<select id="orderDelivery" required>
+						<option value="home">${translations[lang].deliveryHome}</option>
+						<option value="office">${translations[lang].deliveryOffice}</option>
+					</select>
+					<button type="submit">${translations[lang].orderNow}</button>
+				</form>
+			`;
+
+			const stateEl = document.getElementById('orderState');
+			const munEl = document.getElementById('orderMunicipality');
+			populateStateSelect(stateEl, lang);
+			stateEl.addEventListener('change', () => populateMunicipalitySelect(munEl, stateEl.value, lang));
+
+			document.getElementById('orderForm').addEventListener('submit', event => {
+				event.preventDefault();
+				const order = {
+					id: Date.now(),
+					productId: product.id,
+					productName: product.name[lang],
+					productPrice: product.price,
+					firstName: document.getElementById('orderFirstName').value.trim(),
+					lastName: document.getElementById('orderLastName').value.trim(),
+					phone: document.getElementById('orderPhone').value.trim(),
+					state: document.getElementById('orderState').value,
+					municipality: document.getElementById('orderMunicipality').value,
+					address: document.getElementById('orderAddress').value.trim(),
+					delivery: document.getElementById('orderDelivery').value,
+					status: 'pending',
+					createdAt: new Date().toISOString()
+				};
+				// phone validation: must start with 0 and be 10 digits
+				if (!/^0\d{9}$/.test(order.phone)) {
+					alert('رقم الهاتف غير صالح. يجب أن يبدأ ب0 ويتكون من 10 أرقام. / Numéro incorrect. Doit commencer par 0 et contenir 10 chiffres.');
+					return;
+				}
+				if (!order.address) {
+					alert(translations[lang].orderAddressRequired);
+					return;
+				}
+				orders.push(order);
+				saveOrders(orders);
+				alert(translations[lang].orderSuccess);
+				showProductsPage();
+			});
+		}
+
+		function showAboutPage() {
+			const lang = langSelect.value;
+			content.innerHTML = `
+				<h1>${translations[lang].about}</h1>
+				<p>${translations[lang].aboutText}</p>
+			`;
+		}
+
+		function showOrdersPage() {
+			const lang = langSelect.value;
+			const locale = lang === 'ar' ? 'ar-DZ' : lang === 'fr' ? 'fr-FR' : 'en-US';
+			content.dataset.currentAction = 'orders';
+			const sortedOrders = orders.slice().sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+			content.innerHTML = `
+				<h1>${translations[lang].orders}</h1>
+				<p>${translations[lang].ordersText}</p>
+				<div class="orders-grid">
+					${sortedOrders.length === 0 ? `<p class="empty-state">${translations[lang].noOrders}</p>` : sortedOrders.map(order => {
+						const w = wilayas.find(x => x.code === order.state);
+						const stateLabel = w ? (w.name[lang] || w.name.en) : order.state;
+						const deliveryLabel = order.delivery === 'office' ? translations[lang].deliveryOffice : translations[lang].deliveryHome;
+						return `
+							<div class="order-card">
+								<h2>${order.productName}</h2>
+								<p class="order-line"><strong>${translations[lang].productPrice}:</strong> ${formatPrice(order.productPrice, lang)}</p>
+								<p class="order-line"><strong>${translations[lang].orderFirstName}:</strong> ${order.firstName}</p>
+								<p class="order-line"><strong>${translations[lang].orderLastName}:</strong> ${order.lastName}</p>
+								<p class="order-line"><strong>${translations[lang].orderPhone}:</strong> ${order.phone}</p>
+								<p class="order-line"><strong>${translations[lang].orderState}:</strong> ${stateLabel}</p>
+								<p class="order-line"><strong>${translations[lang].orderMunicipality}:</strong> ${order.municipality}</p>
+								<p class="order-line"><strong>${translations[lang].deliveryHome}:</strong> ${deliveryLabel}</p>
+								<p class="order-line"><strong>${translations[lang].orderDate}:</strong> ${new Date(order.createdAt).toLocaleString(locale)}</p>
+							</div>
+						`;
+					}).join('')}
+				</div>
+				`;
+
+			content.querySelectorAll('.order-actions button').forEach(btn => {
+				btn.addEventListener('click', () => {
+					const id = Number(btn.dataset.id);
+					const action = btn.dataset.action;
+					if (action === 'confirm') {
+						orders = orders.map(order => order.id === id ? { ...order, status: 'confirmed' } : order);
+						saveOrders(orders);
+						alert(translations[lang].orderConfirmed);
+						showOrdersPage();
+					}
+					if (action === 'delete') {
+						if (confirm('هل تريد حذف هذا الطلب؟ / Voulez-vous supprimer cette commande ? / Delete this order?')) {
+							orders = orders.filter(order => order.id !== id);
+							saveOrders(orders);
+							alert(translations[lang].deletedSuccess);
+							showOrdersPage();
+						}
+					}
+				});
+			});
+		}
+		let editingProductId = null;
+
+		function showAddProductPage() {
+			const lang = langSelect.value;
+			const editProduct = products.find(product => product.id === editingProductId) || null;
+			const buttonText = editProduct ? translations[lang].updateProduct : translations[lang].saveProduct;
+			const imagesValue = editProduct ? (editProduct.images || (editProduct.image ? [editProduct.image] : [])) : [];
+			const nameValue = editProduct ? editProduct.name[lang] : '';
+			const descValue = editProduct ? editProduct.description[lang] : '';
+			const priceValue = editProduct ? editProduct.price : '';
+			content.innerHTML = `
+				<h1>${translations[lang].addProduct}</h1>
+				<form id="productForm" class="product-form">
+					<label>${translations[lang].productName}</label>
+					<input id="productName" type="text" value="${nameValue}" placeholder="${translations[lang].productName}" required>
+					<label>${translations[lang].productDesc}</label>
+					<textarea id="productDesc" rows="4" placeholder="${translations[lang].productDesc}" required>${descValue}</textarea>
+					<label>${translations[lang].productPrice}</label>
+					<input id="productPrice" type="number" min="0" step="0.01" value="${priceValue}" placeholder="0.00" required>
+					<label>${translations[lang].productImage} (max 3)</label>
+					<input id="productImage" type="file" accept="image/*" multiple>
+					<div class="preview-row">
+						${imagesValue.map(img => `<img class="image-preview" src="${img}" alt="preview" loading="lazy">`).join('')}
+					</div>
+					<button type="submit">${buttonText}</button>
+					${editProduct ? `<button type="button" id="cancelEdit" class="secondary-button">${translations[lang].cancelEdit}</button>` : ''}
+				</form>
+				<div class="product-grid">
+					${products.length === 0 ? `<p class="empty-state">${translations[lang].noProducts}</p>` : products.map(product => `
+						<div class="product-card admin-card" data-id="${product.id}">
+							<div class="carousel">
+								<button class="carousel-btn carousel-prev" data-id="${product.id}">&lt;</button>
+								<img src="${getProductImage(product,0)}" alt="${product.name[lang]}" class="carousel-image" data-index="0">
+								<button class="carousel-btn carousel-next" data-id="${product.id}">&gt;</button>
+							</div>
+							<h3>${product.name[lang]}</h3>
+							<p>${product.description[lang]}</p>
+							<div class="product-actions">
+								<button type="button" class="edit-button" data-action="edit" data-id="${product.id}">${translations[lang].editLabel}</button>
+								<button type="button" class="delete-button" data-action="delete" data-id="${product.id}">${translations[lang].deleteLabel}</button>
+							</div>
+						</div>
+					`).join('')}
+				</div>
+			`;
+
+			document.getElementById('productForm').addEventListener('submit', async event => {
+				event.preventDefault();
+				const name = document.getElementById('productName').value.trim();
+				const desc = document.getElementById('productDesc').value.trim();
+				const price = parseFloat(document.getElementById('productPrice').value);
+				const imageInput = document.getElementById('productImage');
+				let images = imagesValue.slice();
+				if (imageInput.files && imageInput.files.length > 0) {
+					const files = Array.from(imageInput.files).slice(0,3);
+					images = await Promise.all(files.map(f => readFileAsDataURL(f)));
+				}
+				if (!name || !desc || images.length === 0 || Number.isNaN(price)) return alert('Please complete all fields and add at least one image');
+				if (editingProductId) {
+					products = products.map(product => {
+						if (product.id === editingProductId) {
+							return {
+								...product,
+								images,
+								price,
+								name: { ar: name, fr: name, en: name },
+								description: { ar: desc, fr: desc, en: desc }
+							};
+						}
+						return product;
+					});
+					saveProducts(products);
+					alert(translations[lang].updatedSuccess);
+					editingProductId = null;
+				} else {
+					products.push({
+						id: Date.now(),
+						images,
+						price,
+						name: { ar: name, fr: name, en: name },
+						description: { ar: desc, fr: desc, en: desc }
+					});
+					saveProducts(products);
+					alert(translations[lang].addedSuccess);
+				}
+				showAddProductPage();
+			});
+
+			const list = content.querySelector('.product-grid');
+			if (list) {
+				list.addEventListener('click', event => {
+					const button = event.target.closest('button');
+					if (!button) return;
+					const action = button.dataset.action;
+					const id = Number(button.dataset.id);
+					if (action === 'edit') {
+						editingProductId = id;
+						showAddProductPage();
+					}
+					if (action === 'delete') {
+						if (confirm('هل تريد حذف هذا المنتج؟ / Voulez-vous supprimer ce produit ? / Delete this product?')) {
+							products = products.filter(product => product.id !== id);
+							saveProducts(products);
+							alert(translations[lang].deletedSuccess);
+							showAddProductPage();
+						}
+					}
+				});
+			}
+
+			const cancelEdit = document.getElementById('cancelEdit');
+			if (cancelEdit) {
+				cancelEdit.addEventListener('click', () => {
+					editingProductId = null;
+					showAddProductPage();
+				});
+			}
+
+			// wire carousel buttons in admin view
+			document.querySelectorAll('.carousel-prev, .carousel-next').forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					e.preventDefault();
+					const id = Number(btn.dataset.id);
+					const dir = btn.classList.contains('carousel-next') ? 1 : -1;
+					const card = document.querySelector(`.product-card[data-id="${id}"]`);
+					if (!card) return;
+					const img = card.querySelector('.carousel-image');
+					const prod = products.find(x => x.id === id);
+					if (!prod) return;
+					const count = (prod.images && prod.images.length) || (prod.image ? 1 : 0);
+					if (count === 0) return;
+					let idx = Number(img.dataset.index) + dir;
+					if (idx < 0) idx = count - 1;
+					if (idx >= count) idx = 0;
+					img.dataset.index = idx;
+					img.src = getProductImage(prod, idx);
+				});
+			});
+		}
+
+		function showManageStorePage() {
+			const lang = langSelect.value;
+			content.innerHTML = `
+				<h1>${translations[lang].manageStore}</h1>
+				<p>${translations[lang].manageTitle}</p>
+			`;
+		}
+
+		function showUsersPage() {
+			const lang = langSelect.value;
+			content.innerHTML = `
+				<h1>${translations[lang].users}</h1>
+				<p>${translations[lang].usersText}</p>
+			`;
+		}
+
+		roleSelect.addEventListener('change', () => {
+			const role = roleSelect.value;
+			if (role === 'admin') {
+				const pw = prompt('Veuillez entrer le mot de passe / أدخل كلمة المرور / Enter password');
+				if (pw === PASSWORD) {
+					sessionStorage.setItem('isAdmin','true');
+					alert('تم التحقق. وضع المسؤول مفعل. / Admin mode enabled');
+				} else {
+					alert('كلمة مرور خاطئة. سيتم البقاء في وضع المستخدم.');
+					roleSelect.value = 'user';
+					sessionStorage.setItem('isAdmin','false');
+				}
+			} else {
+				sessionStorage.setItem('isAdmin','false');
+			}
+			renderNav(roleSelect.value);
+		});
+
+		langSelect.addEventListener('change', () => {
+			translate(langSelect.value);
+			if (content.querySelector('h1')) {
+				const currentAction = content.dataset.currentAction;
+				if (currentAction) handleNavAction(currentAction);
+			}
+		});
+
+		// initialize
+		if (!sessionStorage.getItem('isAdmin')) sessionStorage.setItem('isAdmin','false');
+		translate(langSelect.value || 'ar');
+		showProductsPage();
+	</script>
+</body>
+</html>
+
