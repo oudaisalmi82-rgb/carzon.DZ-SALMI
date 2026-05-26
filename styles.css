@@ -188,6 +188,12 @@ body {
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 12px 30px rgba(0,0,0,0.18);
 }
+
+/* confirmed order style: translucent green */
+.order-card.confirmed {
+  background: rgba(72, 180, 74, 0.08);
+  border: 1px solid rgba(72, 180, 74, 0.22);
+}
 .order-line {
   color: #d7e2ff;
   margin: 8px 0;
@@ -321,5 +327,58 @@ body {
   .controls { gap: 8px; flex-wrap: wrap; }
   .control-item select { min-width: 110px; }
   #content { padding: 24px; }
+}
+
+/* Additional mobile-friendly adjustments */
+@media (max-width:900px) {
+  .topbar { padding: 12px 14px; }
+  .brand { font-size: 1rem; }
+  .nav-list { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .nav-list li { white-space: nowrap; }
+  #content { margin: 12px; border-radius: 16px; padding: 18px; }
+  .product-card img, .carousel-image { height: 140px; }
+  .product-card { padding: 14px; border-radius: 14px; }
+  #content p { font-size: 0.95rem; }
+}
+
+@media (max-width:600px) {
+  .topbar { flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+  .controls { width: 100%; justify-content: space-between; }
+  .control-item select { min-width: 48%; }
+  .product-grid { grid-template-columns: 1fr; }
+  .product-card img, .carousel-image { height: 120px; }
+  .product-form button { width: 100%; }
+  .preview-row { overflow-x: auto; padding-bottom: 6px; }
+  .preview-row .image-preview { width: 72px; height: 54px; flex: 0 0 auto; }
+  .image-preview { max-height: 160px; }
+  #content { padding: 14px; }
+}
+
+/* Slightly reduce visual weight on small devices for performance */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+
+/* Hamburger / mobile nav styles */
+.hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #eef3ff;
+  font-size: 1.6rem;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.main-nav {
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+@media (max-width:900px) {
+  .hamburger { display: inline-block; }
+  .controls { display: flex; gap: 6px; }
+  .main-nav { position: absolute; left: 0; right: 0; top: 64px; z-index: 40; background: rgba(6,12,30,0.96); transform: translateY(-8px); opacity: 0; pointer-events: none; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .main-nav.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .main-nav .nav-list { flex-direction: column; gap: 6px; padding: 12px; }
+  .main-nav .nav-list li { padding: 12px; border-radius: 8px; }
 }
 

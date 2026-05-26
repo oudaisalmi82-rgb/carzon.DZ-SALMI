@@ -10,6 +10,7 @@
 <body dir="rtl">
 	<header class="topbar">
 		<div class="brand">carzon.DZ SALMI</div>
+		<button id="hamburgerBtn" class="hamburger" aria-label="قائمة">☰</button>
 		<div class="controls">
 			<label class="control-item">
 				<select id="langSelect" aria-label="اختر اللغة">
@@ -44,6 +45,7 @@
 		const langSelect = document.getElementById('langSelect');
 		const roleSelect = document.getElementById('roleSelect');
 		const mainNav = document.getElementById('mainNav');
+		const hamburgerBtn = document.getElementById('hamburgerBtn');
 		const content = document.getElementById('content');
 
 		const translations = {
@@ -283,6 +285,11 @@
 			ul.addEventListener('click', event => {
 				const action = event.target.dataset.action;
 				if (action) handleNavAction(action);
+				// close mobile nav after selecting an item
+				if (action && window.innerWidth <= 900) {
+					mainNav.classList.remove('open');
+					if (hamburgerBtn) hamburgerBtn.setAttribute('aria-expanded','false');
+				}
 			});
 			mainNav.appendChild(ul);
 		}
@@ -328,7 +335,7 @@
 						<div class="product-card" data-id="${p.id}">
 							<div class="carousel">
 								<button class="carousel-btn carousel-prev" data-id="${p.id}">&lt;</button>
-								<img src="${getProductImage(p,0)}" alt="${p.name[lang] || p.name.en}" class="carousel-image" data-index="0">
+								<img src="${getProductImage(p,0)}" alt="${p.name[lang] || p.name.en}" class="carousel-image" data-index="0" loading="lazy" decoding="async">
 								<button class="carousel-btn carousel-next" data-id="${p.id}">&gt;</button>
 							</div>
 							<h3>${p.name[lang] || p.name.en}</h3>
@@ -374,7 +381,7 @@
 			content.innerHTML = `
 				<h1>${translations[lang].orderNow}</h1>
 				<div class="product-card order-detail-card">
-					<img src="${getProductImage(product,0)}" alt="${product.name[lang] || product.name.en}" loading="lazy">
+						<img src="${getProductImage(product,0)}" alt="${product.name[lang] || product.name.en}" loading="lazy" decoding="async">
 					<div class="product-card-body">
 						<h2>${product.name[lang] || product.name.en}</h2>
 						<p>${product.description[lang] || product.description.en}</p>
@@ -463,7 +470,7 @@
 						const stateLabel = w ? (w.name[lang] || w.name.en) : order.state;
 						const deliveryLabel = order.delivery === 'office' ? translations[lang].deliveryOffice : translations[lang].deliveryHome;
 						return `
-							<div class="order-card">
+							<div class="order-card ${order.status === 'confirmed' ? 'confirmed' : ''}" data-id="${order.id}">
 								<h2>${order.productName}</h2>
 								<p class="order-line"><strong>${translations[lang].productPrice}:</strong> ${formatPrice(order.productPrice, lang)}</p>
 								<p class="order-line"><strong>${translations[lang].orderFirstName}:</strong> ${order.firstName}</p>
@@ -473,6 +480,10 @@
 								<p class="order-line"><strong>${translations[lang].orderMunicipality}:</strong> ${order.municipality}</p>
 								<p class="order-line"><strong>${translations[lang].deliveryHome}:</strong> ${deliveryLabel}</p>
 								<p class="order-line"><strong>${translations[lang].orderDate}:</strong> ${new Date(order.createdAt).toLocaleString(locale)}</p>
+								<div class="order-actions">
+									<button class="btn confirm-btn" data-id="${order.id}" data-action="confirm">${order.status === 'confirmed' ? '✓ ' + translations[lang].orderConfirmed : translations[lang].confirmOrder}</button>
+									<button class="btn delete-btn" data-id="${order.id}" data-action="delete">${translations[lang].deleteOrder}</button>
+								</div>
 							</div>
 						`;
 					}).join('')}
@@ -519,10 +530,13 @@
 					<textarea id="productDesc" rows="4" placeholder="${translations[lang].productDesc}" required>${descValue}</textarea>
 					<label>${translations[lang].productPrice}</label>
 					<input id="productPrice" type="number" min="0" step="0.01" value="${priceValue}" placeholder="0.00" required>
-					<label>${translations[lang].productImage} (max 3)</label>
-					<input id="productImage" type="file" accept="image/*" multiple>
+					<label>${translations[lang].productImage} (max 10)</label>
+					<div id="productImageControls">
+						<div id="productImageContainer"></div>
+						<div style="margin-top:8px;"><button type="button" id="addImageBtn" class="secondary-button">+ ${translations[lang].productImage}</button></div>
+					</div>
 					<div class="preview-row">
-						${imagesValue.map(img => `<img class="image-preview" src="${img}" alt="preview" loading="lazy">`).join('')}
+						${imagesValue.map(img => `<img class="image-preview" src="${img}" alt="preview" loading="lazy" decoding="async">`).join('')}
 					</div>
 					<button type="submit">${buttonText}</button>
 					${editProduct ? `<button type="button" id="cancelEdit" class="secondary-button">${translations[lang].cancelEdit}</button>` : ''}
@@ -532,7 +546,7 @@
 						<div class="product-card admin-card" data-id="${product.id}">
 							<div class="carousel">
 								<button class="carousel-btn carousel-prev" data-id="${product.id}">&lt;</button>
-								<img src="${getProductImage(product,0)}" alt="${product.name[lang]}" class="carousel-image" data-index="0">
+								<img src="${getProductImage(product,0)}" alt="${product.name[lang]}" class="carousel-image" data-index="0" loading="lazy" decoding="async">
 								<button class="carousel-btn carousel-next" data-id="${product.id}">&gt;</button>
 							</div>
 							<h3>${product.name[lang]}</h3>
@@ -546,6 +560,20 @@
 				</div>
 			`;
 
+			// show immediate previews when selecting files
+			const imageInputEl = document.getElementById('productImage');
+			const previewRowEl = content.querySelector('.preview-row');
+			if (imageInputEl) {
+				imageInputEl.addEventListener('change', async () => {
+					const files = Array.from(imageInputEl.files || []).slice(0, MAX_IMAGES - imagesValue.length);
+					if (files.length === 0) return;
+					const previews = await Promise.all(files.map(f => readFileAsDataURL(f)));
+					const allPreviews = imagesValue.concat(previews).slice(0, MAX_IMAGES);
+						if (previewRowEl) previewRowEl.innerHTML = allPreviews.map(img => `<img class="image-preview" src="${img}" alt="preview" loading="lazy" decoding="async">`).join('');
+				});
+			}
+
+			const MAX_IMAGES = 10;
 			document.getElementById('productForm').addEventListener('submit', async event => {
 				event.preventDefault();
 				const name = document.getElementById('productName').value.trim();
@@ -554,8 +582,9 @@
 				const imageInput = document.getElementById('productImage');
 				let images = imagesValue.slice();
 				if (imageInput.files && imageInput.files.length > 0) {
-					const files = Array.from(imageInput.files).slice(0,3);
-					images = await Promise.all(files.map(f => readFileAsDataURL(f)));
+					const files = Array.from(imageInput.files).slice(0, MAX_IMAGES - images.length);
+					const newImages = await Promise.all(files.map(f => readFileAsDataURL(f)));
+					images = images.concat(newImages).slice(0, MAX_IMAGES);
 				}
 				if (!name || !desc || images.length === 0 || Number.isNaN(price)) return alert('Please complete all fields and add at least one image');
 				if (editingProductId) {
@@ -672,6 +701,15 @@
 				sessionStorage.setItem('isAdmin','false');
 			}
 			renderNav(roleSelect.value);
+
+			// hamburger toggle behavior
+			if (hamburgerBtn) {
+				hamburgerBtn.addEventListener('click', () => {
+					mainNav.classList.toggle('open');
+					const expanded = mainNav.classList.contains('open');
+					hamburgerBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+				});
+			}
 		});
 
 		langSelect.addEventListener('change', () => {
