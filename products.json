@@ -1,0 +1,8 @@
+[
+  {"id":1,"name":"قميص أنيق","price":2499.00,"image":"https://picsum.photos/seed/1/600/400"},
+  {"id":2,"name":"حذاء رياضي","price":4999.00,"image":"https://picsum.photos/seed/2/600/400"},
+  {"id":3,"name":"سماعات بلوتوث","price":7499.00,"image":"https://picsum.photos/seed/3/600/400"},
+  {"id":4,"name":"ساعة ذكية","price":12999.00,"image":"https://picsum.photos/seed/4/600/400"},
+  {"id":5,"name":"حقيبة ظهر","price":3999.00,"image":"https://picsum.photos/seed/5/600/400"},
+  {"id":6,"name":"نظارة شمسية","price":1999.00,"image":"https://picsum.photos/seed/6/600/400"}
+]
